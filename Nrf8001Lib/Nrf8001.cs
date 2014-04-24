@@ -34,7 +34,6 @@ namespace Nrf8001Lib
         {
             _rst = new OutputPort(rstPin, true);
             _req = new OutputPort(reqPin, true);
-            
             _rdy = new InterruptPort(rdyPin, false, Port.ResistorMode.Disabled, Port.InterruptMode.InterruptEdgeLow);
 
             _spi = new SPI(new SPI.Configuration(Cpu.Pin.GPIO_NONE, false, 0, 0, false, true, 100, spiModule));
@@ -42,6 +41,7 @@ namespace Nrf8001Lib
             State = Nrf8001State.Unknown;
             _eventQueue = new Queue();
 
+            // Reset the nRF8001.
             Reset();
 
             _rdy.OnInterrupt += new NativeEventHandler(OnRdyInterrupt);
