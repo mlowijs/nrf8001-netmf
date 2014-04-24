@@ -1,4 +1,5 @@
 nrf8001-netmf
 =============
 
-Library for the nRF8001 in .NET Micro Framework.
+Library for the Nordic Semiconductor nRF8001 for the Microsoft .NET Micro Framework.
+
