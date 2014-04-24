@@ -11,8 +11,7 @@ namespace Nrf8001Lib.Extensions
         /// <param name="writeBuffer">The block of data to write.</param>
         public static void WriteLsb(this SPI spi, byte[] writeBuffer)
         {
-            for (var i = 0; i < writeBuffer.Length; i++)
-                writeBuffer[i] = InvertByte(writeBuffer[i]);
+            InvertBytes(writeBuffer);
 
             spi.Write(writeBuffer);
         }
@@ -25,30 +24,32 @@ namespace Nrf8001Lib.Extensions
         /// <param name="readBuffer">The buffer to read into.</param>
         public static void WriteReadLsb(this SPI spi, byte[] writeBuffer, byte[] readBuffer)
         {
-            for (var i = 0; i < writeBuffer.Length; i++)
-                writeBuffer[i] = InvertByte(writeBuffer[i]);
+            InvertBytes(writeBuffer);
 
             spi.WriteRead(writeBuffer, readBuffer);
 
-            for (var i = 0; i < readBuffer.Length; i++)
-                readBuffer[i] = InvertByte(readBuffer[i]);
+            InvertBytes(readBuffer);
         }
 
-        private static byte InvertByte(byte input)
+        private static void InvertBytes(byte[] bytes)
         {
-            if (input == 0)
-                return input;
-
-            byte output = 0;
-
-            for (var i = 0; i < 8; i++)
+            // Iterate over all bytes
+            for (var i = 0; i < bytes.Length; i++)
             {
-                output <<= 1;
-                output |= (byte)(input & 0x01);
-                input >>= 1;
-            }
+                if (bytes[i] == 0 || bytes[i] == 0xFF)
+                    continue;
 
-            return output;
+                byte output = 0;
+
+                for (var j = 0; j < 8; j++)
+                {
+                    output <<= 1;
+                    output |= (byte)(bytes[i] & 0x01);
+                    bytes[i] >>= 1;
+                }
+
+                bytes[i] = output;
+            }
         }
     }
 }
