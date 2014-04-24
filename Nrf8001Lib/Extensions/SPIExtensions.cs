@@ -4,6 +4,11 @@ namespace Nrf8001Lib.Extensions
 {
     public static class SPIExtensions
     {
+        /// <summary>
+        /// Writes a block of data to the interface, least significant bit first.
+        /// </summary>
+        /// <param name="spi">The SPI interface to write to.</param>
+        /// <param name="writeBuffer">The block of data to write.</param>
         public static void WriteLsb(this SPI spi, byte[] writeBuffer)
         {
             for (var i = 0; i < writeBuffer.Length; i++)
@@ -12,6 +17,12 @@ namespace Nrf8001Lib.Extensions
             spi.Write(writeBuffer);
         }
 
+        /// <summary>
+        /// Writes a block of data to the interface, and reads a block of data from the interface into the read buffer, least significant bit first.
+        /// </summary>
+        /// <param name="spi">The SPI interface to write to.</param>
+        /// <param name="writeBuffer">The block of data to write.</param>
+        /// <param name="readBuffer">The buffer to read into.</param>
         public static void WriteReadLsb(this SPI spi, byte[] writeBuffer, byte[] readBuffer)
         {
             for (var i = 0; i < writeBuffer.Length; i++)
