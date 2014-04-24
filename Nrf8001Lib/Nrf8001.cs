@@ -132,10 +132,8 @@ namespace Nrf8001Lib
             if (advInterval < 0x0020 || advInterval > 0x4000)
                 throw new ArgumentOutOfRangeException("advInterval", "AdvInterval must be between 0x001F and 0x4001.");
 
-            AciSend(Nrf8001OpCode.Connect, (byte)(timeout & 0xFF),
-                                            (byte)(timeout >> 8 & 0xFF),
-                                            (byte)(advInterval & 0xFF),
-                                            (byte)(advInterval >> 8 & 0xFF));
+            AciSend(Nrf8001OpCode.Connect, (byte)(timeout & 0xFF), (byte)(timeout >> 8 & 0xFF), // Timeout
+                                           (byte)(advInterval & 0xFF), (byte)(advInterval >> 8 & 0xFF)); // AdvInterval
         }
         #endregion
 
