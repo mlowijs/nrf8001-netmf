@@ -10,6 +10,8 @@ namespace Nrf8001Lib
 {
     public class Nrf8001
     {
+        private static readonly byte[] ReadEventLengthBuffer = new byte[2];
+
         private OutputPort _req, _rst;
         private InterruptPort _rdy;
         private SPI _spi;
@@ -41,7 +43,7 @@ namespace Nrf8001Lib
             State = Nrf8001State.Unknown;
             _eventQueue = new Queue();
 
-            // Reset the nRF8001.
+            // Reset the nRF8001
             Reset();
 
             _rdy.OnInterrupt += new NativeEventHandler(OnRdyInterrupt);
@@ -167,21 +169,25 @@ namespace Nrf8001Lib
 
         protected byte[] AciReceive()
         {
-            var buffer = new byte[2];
+            // Create a new read buffer
+            var readBuffer = new byte[2];
 
+            // Start SPI communication
             _req.Write(false);
 
-            _spi.WriteReadLsb(new byte[2], buffer);
+            _spi.WriteReadLsb(ReadEventLengthBuffer, readBuffer);
 
-            if (buffer[1] > 0)
+            // Check event packet length
+            if (readBuffer[1] > 0)
             {
-                buffer = new byte[buffer[1]];
-                _spi.WriteReadLsb(new byte[buffer.Length], buffer);
+                readBuffer = new byte[readBuffer[1]];
+                _spi.WriteReadLsb(new byte[readBuffer.Length], readBuffer);
             }
-
+            
+            // SPI communication done
             _req.Write(true);
 
-            return buffer;
+            return readBuffer;
         }
         #endregion
 
