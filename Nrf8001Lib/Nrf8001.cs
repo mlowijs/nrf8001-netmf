@@ -60,6 +60,7 @@ namespace Nrf8001Lib
             _rst.Write(false);
             Thread.Sleep(10);
 
+            _eventQueue.Clear();
             _rst.Write(true);
         }
 
