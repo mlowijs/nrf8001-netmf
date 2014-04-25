@@ -70,7 +70,7 @@ namespace BtTest
 
                 if (nrfEvent.EventType == Nrf8001EventType.DeviceStarted)
                 {
-                    nrf.Connect(60, 32);
+                    nrf.Bond(60, 32);
                 }
                 else
                     Debug.Print("Event: " + nrfEvent.EventType);

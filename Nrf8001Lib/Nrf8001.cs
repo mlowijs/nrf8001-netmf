@@ -157,7 +157,7 @@ namespace Nrf8001Lib
             if (interval < 0x0020 || interval > 0x4000)
                 throw new ArgumentOutOfRangeException("interval", "Interval must be between 0x001F and 0x4001.");
 
-            AciSend(Nrf8001OpCode.Bond, (byte)(timeout & 0xFF), (byte)(timeout >> 8 & 0xFF), // Timeout
+            AciSend(Nrf8001OpCode.Bond, 0x10, 0x00, //(byte)(timeout & 0xFF), (byte)(timeout >> 8 & 0xFF), // Timeout
                                         (byte)(interval & 0xFF), (byte)(interval >> 8 & 0xFF)); // Interval
         }
         #endregion
