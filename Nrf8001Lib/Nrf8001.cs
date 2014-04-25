@@ -216,9 +216,7 @@ namespace Nrf8001Lib
 
         private void OnRdyInterrupt(uint data1, uint data2, DateTime time)
         {
-            var nrfEvent = new Nrf8001Event(AciReceive());
-
-            _eventQueue.Enqueue(nrfEvent);
+            _eventQueue.Enqueue(new Nrf8001Event(AciReceive()));
         }
     }
 }
