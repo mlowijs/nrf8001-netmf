@@ -166,7 +166,7 @@ namespace Nrf8001Lib
         protected void AciSend(Nrf8001OpCode opCode, params byte[] data)
         {
             if (data.Length > 30)
-                throw new ArgumentOutOfRangeException("data", "Array is too long (max 30 bytes)");
+                throw new ArgumentOutOfRangeException("data", "The maximum amount of data bytes is 30.");
 
             // Create ACI packet
             var packet = new byte[data.Length + 2];
