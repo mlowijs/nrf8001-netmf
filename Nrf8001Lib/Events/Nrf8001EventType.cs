@@ -8,6 +8,7 @@ namespace Nrf8001Lib.Events
         CommandResponse = 0x84,
         Connected = 0x85,
         Disconnected = 0x86,
+        BondStatus = 0x87,
         PipeStatus = 0x88,
     }
 }

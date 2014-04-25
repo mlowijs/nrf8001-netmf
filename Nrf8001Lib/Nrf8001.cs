@@ -24,7 +24,7 @@ namespace Nrf8001Lib
         /// <summary>
         /// Gets the amount of data credits available.
         /// </summary>
-        public byte DataCreditAvailable { get; protected set; }
+        public byte DataCreditsAvailable { get; protected set; }
 
         /// <summary>
         /// Creates a new nRF8001 device interface.
@@ -32,6 +32,7 @@ namespace Nrf8001Lib
         /// <param name="rstPin">The application controller pin that the nRF8001's RST pin is connected to.</param>
         /// <param name="reqPin">The application controller pin that the nRF8001's REQn pin is connected to.</param>
         /// <param name="rdyPin">The application controller pin that the nRF8001's RDYn pin is connected to.</param>
+        /// <param name="spiModule">The SPI module to use for communication with the nRF8001.</param>
         public Nrf8001(Cpu.Pin rstPin, Cpu.Pin reqPin, Cpu.Pin rdyPin, SPI.SPI_module spiModule)
         {
             _rst = new OutputPort(rstPin, true);
@@ -77,7 +78,7 @@ namespace Nrf8001Lib
             if (nrfEvent.EventType == Nrf8001EventType.DeviceStarted)
             {
                 State = (Nrf8001State)nrfEvent.Data[1];
-                DataCreditAvailable = nrfEvent.Data[3];
+                DataCreditsAvailable = nrfEvent.Data[3];
             }
 
             return nrfEvent;
@@ -121,9 +122,9 @@ namespace Nrf8001Lib
         /// Starts advertising and establishes a connection to a peer device.
         /// </summary>
         /// <remarks>Section 24.14</remarks>
-        /// <param name="timeout">Advertisement time, in seconds.</param>
-        /// <param name="advInterval">Advertisement interval, in periods of 0.625 milliseconds.</param>
-        public void Connect(ushort timeout, ushort advInterval)
+        /// <param name="timeout">Advertisement timeout, in seconds.</param>
+        /// <param name="interval">Advertisement interval, in periods of 0.625 milliseconds.</param>
+        public void Connect(ushort timeout, ushort interval)
         {
             if (State != Nrf8001State.Standby)
                 throw new InvalidOperationException("The device is not in Standby mode.");
@@ -131,11 +132,32 @@ namespace Nrf8001Lib
             if (timeout < 0x0001 || timeout > 0x3FFF)
                 throw new ArgumentOutOfRangeException("timeout", "Timeout must be between 0x0000 and 0x4000.");
 
-            if (advInterval < 0x0020 || advInterval > 0x4000)
-                throw new ArgumentOutOfRangeException("advInterval", "AdvInterval must be between 0x001F and 0x4001.");
+            if (interval < 0x0020 || interval > 0x4000)
+                throw new ArgumentOutOfRangeException("interval", "Interval must be between 0x001F and 0x4001.");
 
             AciSend(Nrf8001OpCode.Connect, (byte)(timeout & 0xFF), (byte)(timeout >> 8 & 0xFF), // Timeout
-                                           (byte)(advInterval & 0xFF), (byte)(advInterval >> 8 & 0xFF)); // AdvInterval
+                                           (byte)(interval & 0xFF), (byte)(interval >> 8 & 0xFF)); // Interval
+        }
+
+        /// <summary>
+        /// Starts advertising to setup a trusted relationship with a peer device.
+        /// </summary>
+        /// <remarks>Section 24.15</remarks>
+        /// <param name="timeout">Advertisement timeout, in seconds.</param>
+        /// <param name="interval">Advertisement interval, in periods of 0.625 milliseconds.</param>
+        public void Bond(ushort timeout, ushort interval)
+        {
+            if (State != Nrf8001State.Standby)
+                throw new InvalidOperationException("The device is not in Standby mode.");
+
+            if (timeout < 0x0001 || timeout > 0x00B4)
+                throw new ArgumentOutOfRangeException("timeout", "Timeout must be between 0x0000 and 0x00B5.");
+
+            if (interval < 0x0020 || interval > 0x4000)
+                throw new ArgumentOutOfRangeException("interval", "Interval must be between 0x001F and 0x4001.");
+
+            AciSend(Nrf8001OpCode.Bond, (byte)(timeout & 0xFF), (byte)(timeout >> 8 & 0xFF), // Timeout
+                                        (byte)(interval & 0xFF), (byte)(interval >> 8 & 0xFF)); // Interval
         }
         #endregion
 

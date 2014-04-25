@@ -6,6 +6,7 @@ namespace Nrf8001Lib.Commands
         Test = 0x01,
         Echo = 0x02,
         Setup = 0x06,
-        Connect = 0x0F
+        Connect = 0x0F,
+        Bond = 0x10
     }
 }
