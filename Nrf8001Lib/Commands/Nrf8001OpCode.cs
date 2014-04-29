@@ -7,6 +7,7 @@ namespace Nrf8001Lib.Commands
         Echo = 0x02,
         Setup = 0x06,
         Connect = 0x0F,
-        Bond = 0x10
+        Bond = 0x10,
+        SendData = 0x15,
     }
 }

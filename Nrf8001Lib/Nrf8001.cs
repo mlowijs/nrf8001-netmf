@@ -26,6 +26,9 @@ namespace Nrf8001Lib
         /// </summary>
         public byte DataCreditsAvailable { get; protected set; }
 
+        public ulong OpenPipesBitmap { get; protected set; }
+        public ulong ClosedPipesBitmap { get; protected set; }
+
         /// <summary>
         /// Creates a new nRF8001 device interface.
         /// </summary>
@@ -80,6 +83,11 @@ namespace Nrf8001Lib
             {
                 State = (Nrf8001State)nrfEvent.Data[1];
                 DataCreditsAvailable = nrfEvent.Data[3];
+            }
+            else if (nrfEvent.EventType == Nrf8001EventType.PipeStatus)
+            {
+                OpenPipesBitmap = nrfEvent.Data.ToUnsignedLong(1);
+                ClosedPipesBitmap = nrfEvent.Data.ToUnsignedLong(9);
             }
 
             return nrfEvent;
@@ -151,14 +159,25 @@ namespace Nrf8001Lib
             if (State != Nrf8001State.Standby)
                 throw new InvalidOperationException("The device is not in Standby mode.");
 
-            if (timeout < 0x0001 || timeout > 0x00B4)
-                throw new ArgumentOutOfRangeException("timeout", "Timeout must be between 0x0000 and 0x00B5.");
+            if (timeout < 0x0001 || timeout > 0x001E)
+                throw new ArgumentOutOfRangeException("timeout", "Timeout must be between 0x0000 and 0x001F.");
 
             if (interval < 0x0020 || interval > 0x4000)
                 throw new ArgumentOutOfRangeException("interval", "Interval must be between 0x001F and 0x4001.");
 
-            AciSend(Nrf8001OpCode.Bond, 0x10, 0x00, //(byte)(timeout & 0xFF), (byte)(timeout >> 8 & 0xFF), // Timeout
+            AciSend(Nrf8001OpCode.Bond, 0x1E, 0x00, //(byte)(timeout & 0xFF), (byte)(timeout >> 8 & 0xFF), // Timeout
                                         (byte)(interval & 0xFF), (byte)(interval >> 8 & 0xFF)); // Interval
+        }
+
+        public void SendData(byte servicePipeId, params byte[] data)
+        {
+            if (servicePipeId < 2 || servicePipeId > 62)
+                throw new ArgumentOutOfRangeException("pipe", "Service pipe ID must be between 1 and 63.");
+
+            if (data.Length < 1 || data.Length > 20)
+                throw new ArgumentOutOfRangeException("data", "Data length must be between 0 and 21.");
+
+            //AciSend(Nrf8001OpCode.SendData, servicePipeId, data);
         }
         #endregion
 

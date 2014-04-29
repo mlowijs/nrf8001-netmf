@@ -34,6 +34,7 @@
     <Compile Include="Commands\Nrf8001OpCode.cs" />
     <Compile Include="Events\Nrf8001Event.cs" />
     <Compile Include="Events\Nrf8001EventType.cs" />
+    <Compile Include="Extensions\ByteArrayExtensions.cs" />
     <Compile Include="Extensions\SPIExtensions.cs" />
     <Compile Include="Nrf8001.cs" />
     <Compile Include="Nrf8001State.cs" />

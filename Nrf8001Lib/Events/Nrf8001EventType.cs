@@ -10,5 +10,7 @@ namespace Nrf8001Lib.Events
         Disconnected = 0x86,
         BondStatus = 0x87,
         PipeStatus = 0x88,
+        DataCredit = 0x8A,
+        DataReceived = 0x8C
     }
 }
