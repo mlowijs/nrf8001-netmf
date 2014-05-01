@@ -113,11 +113,9 @@ namespace Nrf8001Lib
                     DataCreditsAvailable = nrfEvent.Data[1];
                     break;
             }
-
 #if DEBUG
             Debug.Print("Event: " + nrfEvent.EventType);
 #endif
-
             return nrfEvent;
         }
 
@@ -221,7 +219,7 @@ namespace Nrf8001Lib
                 throw new ArgumentOutOfRangeException("interval", "Interval must be between 0x001F and 0x4001.");
 
             AciSend(AciOpCode.Bond, 0x1E, 0x00, //(byte)(timeout & 0xFF), (byte)(timeout >> 8 & 0xFF), // Timeout
-                                        (byte)(interval & 0xFF), (byte)(interval >> 8 & 0xFF)); // Interval
+                                    (byte)(interval & 0xFF), (byte)(interval >> 8 & 0xFF)); // Interval
         }
 
         /// <summary>
