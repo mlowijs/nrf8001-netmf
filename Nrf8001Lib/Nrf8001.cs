@@ -1,11 +1,11 @@
 using System;
 using System.Collections;
 using System.Threading;
+using Microsoft.SPOT;
 using Microsoft.SPOT.Hardware;
 using Nrf8001Lib.Commands;
 using Nrf8001Lib.Events;
 using Nrf8001Lib.Extensions;
-using Microsoft.SPOT;
 
 namespace Nrf8001Lib
 {

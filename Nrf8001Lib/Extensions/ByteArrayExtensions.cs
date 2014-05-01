@@ -10,9 +10,7 @@ namespace Nrf8001Lib.Extensions
             ulong result = 0;
 
             for (int i = 0; i < length; i++)
-            {
                 result |= (ulong)((ulong)bytes[start + i] << i * 8);
-            }
 
             return result;
         }
