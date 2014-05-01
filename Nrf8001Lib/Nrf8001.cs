@@ -188,6 +188,12 @@ namespace Nrf8001Lib
                                         (byte)(interval & 0xFF), (byte)(interval >> 8 & 0xFF)); // Interval
         }
 
+        /// <summary>
+        /// Sends data to a peer device through a transmit service pipe.
+        /// </summary>
+        /// <remarks>Section 25.2</remarks>
+        /// <param name="servicePipeId">The ID of the service pipe to send data through.</param>
+        /// <param name="data">The data to send.</param>
         public void SendData(byte servicePipeId, params byte[] data)
         {
             if (servicePipeId < 1 || servicePipeId > 62)
