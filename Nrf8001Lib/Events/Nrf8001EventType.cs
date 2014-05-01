@@ -11,6 +11,7 @@ namespace Nrf8001Lib.Events
         BondStatus = 0x87,
         PipeStatus = 0x88,
         DataCredit = 0x8A,
-        DataReceived = 0x8C
+        DataReceived = 0x8C,
+        PipeError = 0x8D
     }
 }

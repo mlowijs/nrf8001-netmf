@@ -5,6 +5,7 @@ using Microsoft.SPOT.Hardware;
 using Nrf8001Lib.Commands;
 using Nrf8001Lib.Events;
 using Nrf8001Lib.Extensions;
+using Microsoft.SPOT;
 
 namespace Nrf8001Lib
 {
@@ -79,16 +80,34 @@ namespace Nrf8001Lib
             var nrfEvent = (Nrf8001Event)_eventQueue.Dequeue();
 
             // Device events
-            if (nrfEvent.EventType == Nrf8001EventType.DeviceStarted)
+            switch (nrfEvent.EventType)
             {
-                State = (Nrf8001State)nrfEvent.Data[1];
-                DataCreditsAvailable = nrfEvent.Data[3];
+                case Nrf8001EventType.DeviceStarted:
+                    State = (Nrf8001State)nrfEvent.Data[1];
+                    DataCreditsAvailable = nrfEvent.Data[3];
+                    break;
+
+                case Nrf8001EventType.Connected:
+                    State = Nrf8001State.Connected;
+                    break;
+
+                case Nrf8001EventType.PipeStatus:
+                    OpenPipesBitmap = nrfEvent.Data.ToUnsignedLong(1);
+                    ClosedPipesBitmap = nrfEvent.Data.ToUnsignedLong(9);
+                    break;
+
+                case Nrf8001EventType.Disconnected:
+                    State = Nrf8001State.Standby;
+                    break;
+
+                case Nrf8001EventType.DataCredit:
+                    DataCreditsAvailable = nrfEvent.Data[1];
+                    break;
             }
-            else if (nrfEvent.EventType == Nrf8001EventType.PipeStatus)
-            {
-                OpenPipesBitmap = nrfEvent.Data.ToUnsignedLong(1);
-                ClosedPipesBitmap = nrfEvent.Data.ToUnsignedLong(9);
-            }
+
+#if DEBUG
+            Debug.Print("Event: " + nrfEvent.EventType);
+#endif
 
             return nrfEvent;
         }
@@ -171,13 +190,19 @@ namespace Nrf8001Lib
 
         public void SendData(byte servicePipeId, params byte[] data)
         {
-            if (servicePipeId < 2 || servicePipeId > 62)
-                throw new ArgumentOutOfRangeException("pipe", "Service pipe ID must be between 1 and 63.");
+            if (servicePipeId < 1 || servicePipeId > 62)
+                throw new ArgumentOutOfRangeException("pipe", "Service pipe ID must be between 0 and 63.");
 
             if (data.Length < 1 || data.Length > 20)
                 throw new ArgumentOutOfRangeException("data", "Data length must be between 0 and 21.");
 
-            //AciSend(Nrf8001OpCode.SendData, servicePipeId, data);
+            if (State != Nrf8001State.Connected)
+                throw new InvalidOperationException("The device is not connected.");
+
+            if (DataCreditsAvailable <= 0)
+                throw new InvalidOperationException("There are no data credits available.");
+
+            AciSend(Nrf8001OpCode.SendData, servicePipeId, data);
         }
         #endregion
 
@@ -207,6 +232,16 @@ namespace Nrf8001Lib
             // Wait for RDY to go high
             while (!_rdy.Read()) ;
             _rdy.EnableInterrupt();
+        }
+
+        protected void AciSend(Nrf8001OpCode opCode, byte arg0, params byte[] data)
+        {
+            var buffer = new byte[data.Length + 1];
+
+            buffer[0] = arg0;
+            Array.Copy(data, 0, buffer, 1, data.Length);
+
+            AciSend(opCode, buffer);
         }
 
         protected byte[] AciReceive()

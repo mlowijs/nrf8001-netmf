@@ -8,6 +8,8 @@ namespace Nrf8001Lib
         Standby = 0x03,
 
         // Custom
+        Connected = 0x11,
+
         Unknown = 0x00,
         Resetting = 0xFF,
     }
