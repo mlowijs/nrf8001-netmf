@@ -21,13 +21,22 @@ namespace Nrf8001Lib
         /// <summary>
         /// Gets the device state of the nRF8001.
         /// </summary>
+        /// <remarks>Section 22</remarks>
         public Nrf8001State State { get; protected set; }
         /// <summary>
         /// Gets the amount of data credits available.
         /// </summary>
+        /// <remarks>Section 21.2</remarks>
         public byte DataCreditsAvailable { get; protected set; }
-
+        /// <summary>
+        /// Gets the bitmap containing all open pipes.
+        /// </summary>
+        /// <remarks>Section 26.8</remarks>
         public ulong OpenPipesBitmap { get; protected set; }
+        /// <summary>
+        /// Gets the bitmap containing all closed pipes that need opening.
+        /// </summary>
+        /// <remarks>Section 26.8</remarks>
         public ulong ClosedPipesBitmap { get; protected set; }
 
         /// <summary>
