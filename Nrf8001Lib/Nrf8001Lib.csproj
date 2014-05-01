@@ -30,10 +30,10 @@
   </PropertyGroup>
   <Import Project="$(NetMfTargetsBaseDir)$(TargetFrameworkVersion)\CSharp.Targets" />
   <ItemGroup>
-    <Compile Include="Commands\Nrf8001AciStatusCode.cs" />
-    <Compile Include="Commands\Nrf8001OpCode.cs" />
-    <Compile Include="Events\Nrf8001Event.cs" />
-    <Compile Include="Events\Nrf8001EventType.cs" />
+    <Compile Include="Commands\AciStatusCode.cs" />
+    <Compile Include="Commands\AciOpCode.cs" />
+    <Compile Include="Events\AciEvent.cs" />
+    <Compile Include="Events\AciEventType.cs" />
     <Compile Include="Extensions\ByteArrayExtensions.cs" />
     <Compile Include="Extensions\SPIExtensions.cs" />
     <Compile Include="Nrf8001.cs" />

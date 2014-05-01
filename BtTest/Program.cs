@@ -38,17 +38,20 @@ namespace BtTest
             DoSetup();
             
             // Wait for a connection
-            _led.Write(true);
             WaitForConnect();
 
             // We are now connected
-            _led.Write(false);
-
             byte notData = 0x01;
 
             while (true)
             {
-                _nrf.HandleEvent();
+                var nrfEvent = _nrf.HandleEvent();
+
+                if (nrfEvent != null)
+                {
+                    if (nrfEvent.EventType == Nrf8001EventType.Disconnected)
+                        WaitForConnect();
+                }
 
                 notData = (byte)(notData == 0 ? 0x01 : 0);
 
@@ -73,11 +76,11 @@ namespace BtTest
                 if (nrfEvent == null)
                     continue;
 
-                if (nrfEvent.EventType == Nrf8001EventType.CommandResponse && nrfEvent.Data[1] == (byte)Nrf8001OpCode.Setup)
+                if (nrfEvent.EventType == Nrf8001EventType.CommandResponse && nrfEvent.Data[1] == (byte)AciOpCode.Setup)
                 {
-                    if (nrfEvent.Data[2] == (byte)Nrf8001AciStatusCode.TransactionContinue)
+                    if (nrfEvent.Data[2] == (byte)AciStatusCode.TransactionContinue)
                         _nrf.Setup(SetupData[setupIndex++]);
-                    else if (nrfEvent.Data[2] != (byte)Nrf8001AciStatusCode.TransactionComplete)
+                    else if (nrfEvent.Data[2] != (byte)AciStatusCode.TransactionComplete)
                         return false;
                 }
                 else if (nrfEvent.EventType == Nrf8001EventType.DeviceStarted)
@@ -89,6 +92,7 @@ namespace BtTest
 
         private void WaitForConnect()
         {
+            _led.Write(true);
             _nrf.Connect(15, 32);
 
             while (true)
@@ -99,7 +103,10 @@ namespace BtTest
                     continue;
 
                 if (nrfEvent.EventType == Nrf8001EventType.PipeStatus && _nrf.OpenPipesBitmap > 1)
+                {
+                    _led.Write(false);
                     return;
+                }
                 else if (nrfEvent.EventType == Nrf8001EventType.Disconnected)
                     _nrf.Connect(15, 32);
             }

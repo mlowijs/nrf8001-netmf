@@ -72,12 +72,12 @@ namespace Nrf8001Lib
         /// Handles the first event in the nRF8001's event queue. Call this method as often as possible from the application controller.
         /// </summary>
         /// <returns>The first event in the event queue.</returns>
-        public Nrf8001Event HandleEvent()
+        public AciEvent HandleEvent()
         {
             if (_eventQueue.Count == 0)
                 return null;
 
-            var nrfEvent = (Nrf8001Event)_eventQueue.Dequeue();
+            var nrfEvent = (AciEvent)_eventQueue.Dequeue();
 
             // Device events
             switch (nrfEvent.EventType)
@@ -120,7 +120,7 @@ namespace Nrf8001Lib
         /// <param name="testFeature">The test feature to activate, or 0xFF to disable Test mode.</param>
         public void Test(byte testFeature)
         {
-            AciSend(Nrf8001OpCode.Test, testFeature);
+            AciSend(AciOpCode.Test, testFeature);
         }
 
         /// <summary>
@@ -133,7 +133,34 @@ namespace Nrf8001Lib
             if (State != Nrf8001State.Test)
                 throw new InvalidOperationException("The device is not in Test mode.");
 
-            AciSend(Nrf8001OpCode.Echo, data);
+            AciSend(AciOpCode.Echo, data);
+        }
+
+        /// <summary>
+        /// Activates Sleep mode.
+        /// </summary>
+        /// <remarks>Section 24.4</remarks>
+        public void Sleep()
+        {
+            if (State != Nrf8001State.Standby)
+                throw new InvalidOperationException("nRF8001 is not in Standby mode.");
+
+            AciSend(AciOpCode.Sleep);
+
+            // Sleep does not return a CommandResponse event.
+            State = Nrf8001State.Sleep;
+        }
+
+        /// <summary>
+        /// Wakes up from Sleep mode.
+        /// </summary>
+        /// <remarks>Section 24.5</remarks>
+        public void Wakeup()
+        {
+            if (State != Nrf8001State.Sleep)
+                throw new InvalidOperationException("nRF8001 is not in Sleep mode.");
+
+            AciSend(AciOpCode.Wakeup);
         }
 
         /// <summary>
@@ -143,7 +170,7 @@ namespace Nrf8001Lib
         /// <param name="data">The setup data to upload.</param>
         public void Setup(byte[] data)
         {
-            AciSend(Nrf8001OpCode.Setup, data);
+            AciSend(AciOpCode.Setup, data);
         }
 
         /// <summary>
@@ -155,7 +182,7 @@ namespace Nrf8001Lib
         public void Connect(ushort timeout, ushort interval)
         {
             if (State != Nrf8001State.Standby)
-                throw new InvalidOperationException("The device is not in Standby mode.");
+                throw new InvalidOperationException("nRF8001 is not in Standby mode.");
 
             if (timeout < 0x0001 || timeout > 0x3FFF)
                 throw new ArgumentOutOfRangeException("timeout", "Timeout must be between 0x0000 and 0x4000.");
@@ -163,7 +190,7 @@ namespace Nrf8001Lib
             if (interval < 0x0020 || interval > 0x4000)
                 throw new ArgumentOutOfRangeException("interval", "Interval must be between 0x001F and 0x4001.");
 
-            AciSend(Nrf8001OpCode.Connect, (byte)(timeout & 0xFF), (byte)(timeout >> 8 & 0xFF), // Timeout
+            AciSend(AciOpCode.Connect, (byte)(timeout & 0xFF), (byte)(timeout >> 8 & 0xFF), // Timeout
                                            (byte)(interval & 0xFF), (byte)(interval >> 8 & 0xFF)); // Interval
         }
 
@@ -176,7 +203,7 @@ namespace Nrf8001Lib
         public void Bond(ushort timeout, ushort interval)
         {
             if (State != Nrf8001State.Standby)
-                throw new InvalidOperationException("The device is not in Standby mode.");
+                throw new InvalidOperationException("nRF8001 is not in Standby mode.");
 
             if (timeout < 0x0001 || timeout > 0x001E)
                 throw new ArgumentOutOfRangeException("timeout", "Timeout must be between 0x0000 and 0x001F.");
@@ -184,7 +211,7 @@ namespace Nrf8001Lib
             if (interval < 0x0020 || interval > 0x4000)
                 throw new ArgumentOutOfRangeException("interval", "Interval must be between 0x001F and 0x4001.");
 
-            AciSend(Nrf8001OpCode.Bond, 0x1E, 0x00, //(byte)(timeout & 0xFF), (byte)(timeout >> 8 & 0xFF), // Timeout
+            AciSend(AciOpCode.Bond, 0x1E, 0x00, //(byte)(timeout & 0xFF), (byte)(timeout >> 8 & 0xFF), // Timeout
                                         (byte)(interval & 0xFF), (byte)(interval >> 8 & 0xFF)); // Interval
         }
 
@@ -203,17 +230,17 @@ namespace Nrf8001Lib
                 throw new ArgumentOutOfRangeException("data", "Data length must be between 0 and 21.");
 
             if (State != Nrf8001State.Connected)
-                throw new InvalidOperationException("The device is not connected.");
+                throw new InvalidOperationException("nRF8001 is not connected.");
 
             if (DataCreditsAvailable <= 0)
                 throw new InvalidOperationException("There are no data credits available.");
 
-            AciSend(Nrf8001OpCode.SendData, servicePipeId, data);
+            AciSend(AciOpCode.SendData, servicePipeId, data);
         }
         #endregion
 
         #region ACI Interface
-        protected void AciSend(Nrf8001OpCode opCode, params byte[] data)
+        protected void AciSend(AciOpCode opCode, params byte[] data)
         {
             if (data.Length > 30)
                 throw new ArgumentOutOfRangeException("data", "The maximum amount of data bytes is 30.");
@@ -240,7 +267,7 @@ namespace Nrf8001Lib
             _rdy.EnableInterrupt();
         }
 
-        protected void AciSend(Nrf8001OpCode opCode, byte arg0, params byte[] data)
+        protected void AciSend(AciOpCode opCode, byte arg0, params byte[] data)
         {
             var buffer = new byte[data.Length + 1];
 
@@ -276,7 +303,7 @@ namespace Nrf8001Lib
 
         private void OnRdyInterrupt(uint data1, uint data2, DateTime time)
         {
-            _eventQueue.Enqueue(new Nrf8001Event(AciReceive()));
+            _eventQueue.Enqueue(new AciEvent(AciReceive()));
         }
     }
 }
