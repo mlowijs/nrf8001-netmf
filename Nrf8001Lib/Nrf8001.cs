@@ -103,6 +103,8 @@ namespace Nrf8001Lib
                 case Nrf8001EventType.PipeStatus:
                     OpenPipesBitmap = nrfEvent.Data.ToUnsignedLong(1);
                     ClosedPipesBitmap = nrfEvent.Data.ToUnsignedLong(9);
+
+                    Debug.Print("PipeStatus o = " + OpenPipesBitmap + " c = " + ClosedPipesBitmap);
                     break;
 
                 case Nrf8001EventType.Disconnected:
@@ -218,7 +220,7 @@ namespace Nrf8001Lib
             if (interval < 0x0020 || interval > 0x4000)
                 throw new ArgumentOutOfRangeException("interval", "Interval must be between 0x001F and 0x4001.");
 
-            AciSend(AciOpCode.Bond, 0x1E, 0x00, //(byte)(timeout & 0xFF), (byte)(timeout >> 8 & 0xFF), // Timeout
+            AciSend(AciOpCode.Bond, (byte)(timeout & 0xFF), (byte)(timeout >> 8 & 0xFF), // Timeout
                                     (byte)(interval & 0xFF), (byte)(interval >> 8 & 0xFF)); // Interval
         }
 
