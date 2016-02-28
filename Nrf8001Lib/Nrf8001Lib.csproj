@@ -32,11 +32,18 @@
   <ItemGroup>
     <Compile Include="Commands\AciStatusCode.cs" />
     <Compile Include="Commands\AciOpCode.cs" />
+    <Compile Include="Commands\BondStatusCode.cs" />
     <Compile Include="Events\AciEvent.cs" />
     <Compile Include="Events\AciEventType.cs" />
+    <Compile Include="Events\BondStatusEvent.cs" />
+    <Compile Include="Events\CommandResponseEvent.cs" />
+    <Compile Include="Events\DataCreditEvent.cs" />
+    <Compile Include="Events\DeviceStartedEvent.cs" />
+    <Compile Include="Extensions\AciEventTypeExtensions.cs" />
     <Compile Include="Extensions\ByteArrayExtensions.cs" />
     <Compile Include="Extensions\SPIExtensions.cs" />
     <Compile Include="Nrf8001.cs" />
+    <Compile Include="Nrf8001Exception.cs" />
     <Compile Include="Nrf8001State.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

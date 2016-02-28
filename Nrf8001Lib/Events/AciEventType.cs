@@ -1,7 +1,7 @@
 
 namespace Nrf8001Lib.Events
 {
-    public enum Nrf8001EventType : byte
+    public enum AciEventType : byte
     {
         DeviceStarted = 0x81,
         Echo = 0x82,
@@ -10,6 +10,7 @@ namespace Nrf8001Lib.Events
         Disconnected = 0x86,
         BondStatus = 0x87,
         PipeStatus = 0x88,
+        TimingEvent = 0x89,
         DataCredit = 0x8A,
         DataReceived = 0x8C,
         PipeError = 0x8D

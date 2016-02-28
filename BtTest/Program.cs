@@ -15,10 +15,13 @@ namespace BtTest
         const byte TriggerStatePipeId = 1;
         const byte ReloadStatePipeId = 2;
 
+        const byte Timeout = 15;
+        const byte Interval = 32;
+
         private readonly byte[][] SetupData = new byte[][] {
-            new byte[] {0x00,0x00,0x02,0x02,0x41,0xfe,},
+            new byte[] {0x00,0x00,0x02,0x02,0x42,0x07,},
             new byte[] {0x10,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x02,0x00,0x02,0x01,0x01,0x00,0x00,0x06,0x00,0x01,0xc1,0x10,0xff,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,},
-            new byte[] {0x10,0x1c,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x10,0x03,0x90,0x00,},
+            new byte[] {0x10,0x1c,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x11,0x00,0x00,0x00,0x11,0x03,0x90,0x00,},
             new byte[] {0x20,0x00,0x04,0x04,0x02,0x02,0x00,0x01,0x28,0x00,0x01,0x00,0x18,0x04,0x04,0x05,0x05,0x00,0x02,0x28,0x03,0x01,0x02,0x03,0x00,0x00,0x2a,0x04,0x04,0x14,},
             new byte[] {0x20,0x1c,0x0e,0x00,0x03,0x2a,0x00,0x01,0x4c,0x61,0x73,0x65,0x72,0x54,0x61,0x67,0x20,0x47,0x75,0x6e,0x20,0x31,0x00,0x00,0x00,0x00,0x00,0x00,0x04,0x04,},
             new byte[] {0x20,0x38,0x05,0x05,0x00,0x04,0x28,0x03,0x01,0x02,0x05,0x00,0x01,0x2a,0x06,0x04,0x03,0x02,0x00,0x05,0x2a,0x01,0x01,0x20,0xff,0x04,0x04,0x05,0x05,0x00,},
@@ -28,8 +31,9 @@ namespace BtTest
             new byte[] {0x20,0xa8,0x04,0x05,0x05,0x00,0x0d,0x28,0x03,0x01,0x12,0x0e,0x00,0x12,0xff,0x16,0x04,0x02,0x01,0x00,0x0e,0xff,0x12,0x01,0x00,0x46,0x14,0x03,0x02,0x00,},
             new byte[] {0x20,0xc4,0x0f,0x29,0x02,0x01,0x00,0x00,0x00,},
             new byte[] {0x40,0x00,0xff,0x11,0x01,0x00,0x02,0x04,0x00,0x0b,0x00,0x0c,0xff,0x12,0x01,0x00,0x02,0x04,0x00,0x0e,0x00,0x0f,},
-            new byte[] {0xf0,0x00,0x02,0xfd,0x7c,},
+            new byte[] {0xf0,0x00,0x02,0x3b,0xf6,},
         };
+
 
         private Nrf8001 _nrf;
         private OutputPort _led = new OutputPort(Pins.ONBOARD_LED, false);
@@ -38,33 +42,27 @@ namespace BtTest
 
         public Program()
         {
-            _nrf = new Nrf8001(Pins.GPIO_PIN_D4, Pins.GPIO_PIN_D2, Pins.GPIO_PIN_D3, SPI_Devices.SPI1);
-            
-            _trigger = new InputPort(Pins.GPIO_PIN_D0, true, ResistorModes.PullUp);
-            _reload = new InputPort(Pins.GPIO_PIN_D6, true, ResistorModes.PullUp);
+            _trigger = new InputPort(Pins.GPIO_PIN_D4, true, ResistorModes.PullUp);
+            _reload = new InputPort(Pins.GPIO_PIN_D5, true, ResistorModes.PullUp);
+
+            _nrf = new Nrf8001(Pins.GPIO_PIN_D8, Pins.GPIO_PIN_D9, Pins.GPIO_PIN_D7, SPI_Devices.SPI1);
+            _nrf.AciEventReceived += OnAciEventReceived;
+
+            _nrf.Setup(SetupData);
         }
 
-        public void Run()
+
+        public void Loop()
         {
             bool triggerState = _trigger.Read();
             bool reloadState = _reload.Read();
 
-            // Setup device
-            if (!DoSetup())
-                Debugger.Break();
-
-            // Wait for a connection
-            WaitForConnect();
+            //_nrf.AwaitConnection(Timeout, Interval);
+            _nrf.AwaitBonding(Timeout, Interval);
 
             while (true)
             {
-                var nrfEvent = _nrf.HandleEvent();
-
-                if (nrfEvent != null)
-                {
-                    if (nrfEvent.EventType == Nrf8001EventType.Disconnected)
-                        WaitForConnect();
-                }
+                _nrf.ProcessEvents();
 
                 // Notify peer device of trigger state change
                 NotifyButtonState(_trigger, TriggerStatePipeId, ref triggerState);
@@ -74,56 +72,6 @@ namespace BtTest
             }
         }
 
-        private bool DoSetup()
-        {
-            while (_nrf.State != Nrf8001State.Setup)
-                _nrf.HandleEvent();
-
-            int setupIndex = 0;
-            _nrf.Setup(SetupData[setupIndex++]);
-
-            while (true)
-            {
-                var nrfEvent = _nrf.HandleEvent();
-
-                if (nrfEvent == null)
-                    continue;
-
-                if (nrfEvent.EventType == Nrf8001EventType.CommandResponse && nrfEvent.Data[1] == (byte)AciOpCode.Setup)
-                {
-                    if (nrfEvent.Data[2] == (byte)AciStatusCode.TransactionContinue)
-                        _nrf.Setup(SetupData[setupIndex++]);
-                    else if (nrfEvent.Data[2] != (byte)AciStatusCode.TransactionComplete)
-                        return false;
-                }
-                else if (nrfEvent.EventType == Nrf8001EventType.DeviceStarted)
-                {
-                    return true;
-                }
-            }
-        }
-
-        private void WaitForConnect()
-        {
-            _led.Write(true);
-            _nrf.Connect(15, 32);
-
-            while (true)
-            {
-                var nrfEvent = _nrf.HandleEvent();
-
-                if (nrfEvent == null)
-                    continue;
-
-                if (nrfEvent.EventType == Nrf8001EventType.PipeStatus && _nrf.OpenPipesBitmap > 1)
-                {
-                    _led.Write(false);
-                    return;
-                }
-                else if (nrfEvent.EventType == Nrf8001EventType.Disconnected)
-                    _nrf.Connect(15, 32);
-            }
-        }
 
         private void NotifyButtonState(InputPort button, byte servicePipeId, ref bool state)
         {
@@ -137,9 +85,24 @@ namespace BtTest
             }
         }
 
+        private void OnAciEventReceived(AciEvent aciEvent)
+        {
+            if (aciEvent.EventType == AciEventType.Disconnected)
+            {
+                _led.Write(false);
+
+                // Auto reconnect
+                _nrf.AwaitConnection(Timeout, Interval);
+            }
+
+            if (aciEvent.EventType == AciEventType.PipeStatus && _nrf.OpenPipesBitmap > 1)
+                _led.Write(true);
+        }
+
+
         public static void Main()
         {
-            new Program().Run();
+            new Program().Loop();
         }
     }
 }

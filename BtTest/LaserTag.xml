@@ -5,15 +5,16 @@
     <Device>nRF8001_Cx</Device>
     <Service Type="local" PrimaryService="true">
         <Name>LaserTag Service</Name>
-        <Uuid>ff10</Uuid>
+        <Uuid BaseUUID="f0fa000036a844b6b21ab518deea2c2d" BaseUUIDName="LaserTag">1000</Uuid>
         <Characteristic>
-            <Name>LaserTag Gun Trigger State</Name>
-            <Uuid>ff11</Uuid>
+            <Name>Gun Trigger State</Name>
+            <Uuid BaseUUID="f0fa000036a844b6b21ab518deea2c2d" BaseUUIDName="LaserTag">1001</Uuid>
             <DefaultValue>0</DefaultValue>
             <UsePresentationFormat>0</UsePresentationFormat>
             <MaxDataLength>1</MaxDataLength>
             <AttributeLenType>1</AttributeLenType>
             <ForceOpen>false</ForceOpen>
+            <ForceEncryption>false</ForceEncryption>
             <Properties>
                 <WriteWithoutResponse>false</WriteWithoutResponse>
                 <Write>false</Write>
@@ -25,18 +26,17 @@
             <AckIsAuto>false</AckIsAuto>
             <PresentationFormatDescriptor Value="0000" Exponent="0" Format="1" NameSpace="01" Unit="0000"/>
             <PeriodForReadingThisCharacteristic>0</PeriodForReadingThisCharacteristic>
-            <PeriodForProperties>
-                <Notify>60000</Notify>
-            </PeriodForProperties>
+            <PeriodForProperties/>
         </Characteristic>
         <Characteristic>
-            <Name>LaserTag Gun Reload State</Name>
-            <Uuid>ff12</Uuid>
+            <Name>Gun Reload State</Name>
+            <Uuid BaseUUID="f0fa000036a844b6b21ab518deea2c2d" BaseUUIDName="LaserTag">1002</Uuid>
             <DefaultValue>0</DefaultValue>
             <UsePresentationFormat>0</UsePresentationFormat>
             <MaxDataLength>1</MaxDataLength>
             <AttributeLenType>1</AttributeLenType>
             <ForceOpen>false</ForceOpen>
+            <ForceEncryption>false</ForceEncryption>
             <Properties>
                 <WriteWithoutResponse>false</WriteWithoutResponse>
                 <Write>false</Write>
@@ -48,17 +48,37 @@
             <AckIsAuto>false</AckIsAuto>
             <PresentationFormatDescriptor Value="0000" Exponent="0" Format="1" NameSpace="01" Unit="0000"/>
             <PeriodForReadingThisCharacteristic>0</PeriodForReadingThisCharacteristic>
-            <PeriodForProperties>
-                <Notify>60000</Notify>
-            </PeriodForProperties>
+            <PeriodForProperties/>
+        </Characteristic>
+        <Characteristic>
+            <Name>Sensor Shot Hit</Name>
+            <Uuid BaseUUID="f0fa000036a844b6b21ab518deea2c2d" BaseUUIDName="LaserTag">1010</Uuid>
+            <DefaultValue>0</DefaultValue>
+            <UsePresentationFormat>0</UsePresentationFormat>
+            <MaxDataLength>1</MaxDataLength>
+            <AttributeLenType>1</AttributeLenType>
+            <ForceOpen>false</ForceOpen>
+            <ForceEncryption>false</ForceEncryption>
+            <Properties>
+                <WriteWithoutResponse>false</WriteWithoutResponse>
+                <Write>false</Write>
+                <Notify>true</Notify>
+                <Indicate>false</Indicate>
+                <Broadcast>false</Broadcast>
+            </Properties>
+            <SetPipe>false</SetPipe>
+            <AckIsAuto>false</AckIsAuto>
+            <PresentationFormatDescriptor Value="0000" Exponent="0" Format="1" NameSpace="01" Unit="0000"/>
+            <PeriodForReadingThisCharacteristic>0</PeriodForReadingThisCharacteristic>
+            <PeriodForProperties/>
         </Characteristic>
     </Service>
     <Gapsettings>
         <Name>LaserTag Gun 1</Name>
         <DeviceNameWriteLength>0</DeviceNameWriteLength>
-        <LocalPipeOnDeviceName>false</LocalPipeOnDeviceName>
+        <LocalPipeOnDeviceName>true</LocalPipeOnDeviceName>
         <DeviceNameShortLength>1</DeviceNameShortLength>
-        <Apperance>ff20</Apperance>
+        <Apperance>8000</Apperance>
         <SecurityLevel>0</SecurityLevel>
         <AuthenticationReq>0</AuthenticationReq>
         <IoCapabilities>0</IoCapabilities>
@@ -66,8 +86,8 @@
         <SecurityRequestDelay>10</SecurityRequestDelay>
         <MinimumKeySize>7</MinimumKeySize>
         <MaximumKeySize>16</MaximumKeySize>
-        <AdvertisingDataBondedBitmap>0</AdvertisingDataBondedBitmap>
-        <AdvertisingDataGeneralBitmap>10</AdvertisingDataGeneralBitmap>
+        <AdvertisingDataBondedBitmap>1a</AdvertisingDataBondedBitmap>
+        <AdvertisingDataGeneralBitmap>1a</AdvertisingDataGeneralBitmap>
         <AdvertisingDataBrodcastBitmap>0</AdvertisingDataBrodcastBitmap>
         <AdvertisingDataBondedScanResponseBitmap>0</AdvertisingDataBondedScanResponseBitmap>
         <AdvertisingDataGeneralScanResponseBitmap>0</AdvertisingDataGeneralScanResponseBitmap>
@@ -85,9 +105,7 @@
         <TimeoutMultipler>65535</TimeoutMultipler>
         <AddServiceUpdateCharacteristic>false</AddServiceUpdateCharacteristic>
         <AddServiceUpdateCharacteristicPipe>false</AddServiceUpdateCharacteristicPipe>
-        <ServiceToAdvertise>
-            <Uuid>ff10</Uuid>
-        </ServiceToAdvertise>
+        <TimingChangeDelay>5</TimingChangeDelay>
         <CustomAdTypes/>
     </Gapsettings>
     <Hardwaresettings>

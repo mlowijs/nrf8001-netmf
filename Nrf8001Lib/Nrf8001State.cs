@@ -8,11 +8,13 @@ namespace Nrf8001Lib
         Setup = 0x02,
         Standby = 0x03,
 
-        // Custom to provide more information about the device state
+        // Custom
         Unknown = 0x00,
         Resetting = 0xFF,
 
         Sleep = 0x11,
-        Connected = 0x12
+        Connected = 0x12,
+        Connecting = 0x13,
+        Bonding = 0x15
     }
 }
