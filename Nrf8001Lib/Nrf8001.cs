@@ -31,6 +31,7 @@ namespace Nrf8001Lib
         /// </summary>
         /// <remarks>Section 22</remarks>
         public Nrf8001State State { get; protected set; }
+
         /// <summary>
         /// Gets the amount of data credits available.
         /// </summary>
@@ -141,7 +142,7 @@ namespace Nrf8001Lib
         /// </summary>
         /// <param name="timeout">Advertisement timeout, in seconds.</param>
         /// <param name="interval">Advertisement interval, in periods of 0.625 milliseconds.</param>
-        public void AwaitBonding(ushort timeout, ushort interval)
+        public void AwaitBond(ushort timeout, ushort interval)
         {
             Bond(timeout, interval);
 
@@ -157,29 +158,6 @@ namespace Nrf8001Lib
         }
 
         #region ACI Commands
-        /// <summary>
-        /// Enables or disables Test mode on the nRF8001.
-        /// </summary>
-        /// <remarks>Section 24.1</remarks>
-        /// <param name="testFeature">The test feature to activate, or 0xFF to disable Test mode.</param>
-        public void Test(byte testFeature)
-        {
-            AciSend(AciOpCode.Test, testFeature);
-        }
-
-        /// <summary>
-        /// Requests an EchoEvent from the nRF8001 containing the specified data.
-        /// </summary>
-        /// <remarks>Section 24.2</remarks>
-        /// <param name="data">The data to be contained in the EchoEvent.</param>
-        public void Echo(params byte[] data)
-        {
-            if (State != Nrf8001State.Test)
-                throw new InvalidOperationException("The device is not in Test mode.");
-
-            AciSend(AciOpCode.Echo, data);
-        }
-
         /// <summary>
         /// Activates Sleep mode.
         /// </summary>
@@ -263,7 +241,7 @@ namespace Nrf8001Lib
             if (State != Nrf8001State.Connected)
                 throw new InvalidOperationException("nRF8001 is not connected.");
 
-            if (DataCreditsAvailable <= 0)
+            if (DataCreditsAvailable < 1)
                 throw new InvalidOperationException("There are no data credits available.");
 
             AciSend(AciOpCode.SendData, servicePipeId, data);

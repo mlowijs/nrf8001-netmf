@@ -58,7 +58,7 @@ namespace BtTest
             bool reloadState = _reload.Read();
 
             //_nrf.AwaitConnection(Timeout, Interval);
-            _nrf.AwaitBonding(Timeout, Interval);
+            _nrf.AwaitBond(Timeout, Interval);
 
             while (true)
             {
