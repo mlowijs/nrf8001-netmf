@@ -3,8 +3,34 @@
 <Profile Version="1.3">
     <SetupId>0</SetupId>
     <Device>nRF8001_Cx</Device>
+    <Service Type="remote" PrimaryService="true">
+        <Name>LaserTag Control Service</Name>
+        <Uuid BaseUUID="f0fa000036a844b6b21ab518deea2c2d" BaseUUIDName="LaserTag">2000</Uuid>
+        <Characteristic>
+            <Name>Red Dot Sight Power</Name>
+            <Uuid BaseUUID="f0fa000036a844b6b21ab518deea2c2d" BaseUUIDName="LaserTag">2004</Uuid>
+            <DefaultValue>1</DefaultValue>
+            <UsePresentationFormat>0</UsePresentationFormat>
+            <MaxDataLength>1</MaxDataLength>
+            <AttributeLenType>1</AttributeLenType>
+            <ForceOpen>false</ForceOpen>
+            <ForceEncryption>false</ForceEncryption>
+            <Properties>
+                <Read>false</Read>
+                <WriteWithoutResponse>false</WriteWithoutResponse>
+                <Write>false</Write>
+                <Notify>true</Notify>
+                <Indicate>false</Indicate>
+                <Broadcast>false</Broadcast>
+            </Properties>
+            <AckIsAuto>false</AckIsAuto>
+            <PresentationFormatDescriptor Value="0000" Exponent="0" Format="1" NameSpace="01" Unit="0000"/>
+            <PeriodForReadingThisCharacteristic>0</PeriodForReadingThisCharacteristic>
+            <PeriodForProperties/>
+        </Characteristic>
+    </Service>
     <Service Type="local" PrimaryService="true">
-        <Name>LaserTag Service</Name>
+        <Name>LaserTag Input Service</Name>
         <Uuid BaseUUID="f0fa000036a844b6b21ab518deea2c2d" BaseUUIDName="LaserTag">1000</Uuid>
         <Characteristic>
             <Name>Gun Trigger State</Name>
