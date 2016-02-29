@@ -8,16 +8,16 @@ namespace Nrf8001Lib.Events
     {
         public AciOpCode Command
         {
-            get { return (AciOpCode)Data[1]; }
+            get { return (AciOpCode)Content[1]; }
         }
 
         public AciStatusCode StatusCode
         {
-            get { return (AciStatusCode)Data[2]; }
+            get { return (AciStatusCode)Content[2]; }
         }
 
-        public CommandResponseEvent(byte[] data)
-            : base(data)
+        public CommandResponseEvent(byte[] content)
+            : base(content)
         {
         }
     }

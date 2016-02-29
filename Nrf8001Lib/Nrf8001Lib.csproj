@@ -38,6 +38,7 @@
     <Compile Include="Events\BondStatusEvent.cs" />
     <Compile Include="Events\CommandResponseEvent.cs" />
     <Compile Include="Events\DataCreditEvent.cs" />
+    <Compile Include="Events\DataReceivedEvent.cs" />
     <Compile Include="Events\DeviceStartedEvent.cs" />
     <Compile Include="Extensions\AciEventTypeExtensions.cs" />
     <Compile Include="Extensions\ByteArrayExtensions.cs" />

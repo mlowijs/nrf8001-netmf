@@ -10,6 +10,7 @@ using Nrf8001Lib.Extensions;
 namespace Nrf8001Lib
 {
     public delegate void AciEventReceivedEventHandler(AciEvent aciEvent);
+    public delegate void DataReceivedEventHandler(DataReceivedEvent dataReceivedEvent);
 
     public class Nrf8001
     {
@@ -24,6 +25,7 @@ namespace Nrf8001Lib
         private int _setupIndex = 0;
 
         public event AciEventReceivedEventHandler AciEventReceived;
+        public event DataReceivedEventHandler DataReceived;
 
         public bool Bonded { get; protected set; }
         /// <summary>
@@ -41,12 +43,12 @@ namespace Nrf8001Lib
         /// Gets the bitmap containing all open pipes.
         /// </summary>
         /// <remarks>Section 26.8</remarks>
-        public ulong OpenPipesBitmap { get; protected set; }
+        protected ulong OpenPipesBitmap { get; set; }
         /// <summary>
         /// Gets the bitmap containing all closed pipes that need opening.
         /// </summary>
         /// <remarks>Section 26.8</remarks>
-        public ulong ClosedPipesBitmap { get; protected set; }
+        protected ulong ClosedPipesBitmap { get; set; }
 
         /// <summary>
         /// Creates a new nRF8001 device interface.
@@ -62,14 +64,12 @@ namespace Nrf8001Lib
             _rdy = new InterruptPort(rdyPin, false, Port.ResistorMode.PullUp, Port.InterruptMode.InterruptEdgeLow);
             _spi = new SPI(new SPI.Configuration(Cpu.Pin.GPIO_NONE, false, 0, 0, false, true, 100, spiModule));
 
-            State = Nrf8001State.Unknown;
-            _eventQueue = new Queue();
-
-            // Reset the nRF8001
-            Reset();
-
             _rdy.OnInterrupt += OnRdyInterrupt;
             AciEventReceived += OnAciEventReceived;
+
+            State = Nrf8001State.Unknown;
+           
+            Reset();
         }
 
         /// <summary>
@@ -82,7 +82,8 @@ namespace Nrf8001Lib
             _rst.Write(false);
             Thread.Sleep(10);
 
-            _eventQueue.Clear();
+            _eventQueue = new Queue();
+
             _rst.Write(true);
         }
 
@@ -196,13 +197,13 @@ namespace Nrf8001Lib
                 throw new InvalidOperationException("nRF8001 is not in Standby mode.");
 
             if (timeout < 0x0001 || timeout > 0x3FFF)
-                throw new ArgumentOutOfRangeException("timeout", "Timeout must be between 0x0000 and 0x4000.");
+                throw new ArgumentOutOfRangeException("timeout", "Timeout must be between 0x0001 and 0x3FFF, inclusive.");
 
             if (interval < 0x0020 || interval > 0x4000)
-                throw new ArgumentOutOfRangeException("interval", "Interval must be between 0x001F and 0x4001.");
+                throw new ArgumentOutOfRangeException("interval", "Interval must be between 0x0020 and 0x4000, inclusive.");
 
-            AciSend(AciOpCode.Connect, (byte)(timeout & 0xFF), (byte)(timeout >> 8 & 0xFF), // Timeout
-                (byte)(interval & 0xFF), (byte)(interval >> 8 & 0xFF)); // Interval
+            AciSend(AciOpCode.Connect, (byte)(timeout), (byte)(timeout >> 8), // Timeout
+                                       (byte)(interval), (byte)(interval >> 8)); // Interval
 
             State = Nrf8001State.Connecting;
         }
@@ -212,16 +213,27 @@ namespace Nrf8001Lib
             if (State != Nrf8001State.Standby)
                 throw new InvalidOperationException("nRF8001 is not in Standby mode.");
 
-            if (timeout < 0x0001 || timeout > 0x001E)
-                throw new ArgumentOutOfRangeException("timeout", "Timeout must be between 0x0000 and 0x001F.");
+            if (timeout < 0x0001 || timeout > 0x00B4)
+                throw new ArgumentOutOfRangeException("timeout", "Timeout must be between 0x0001 and 0x00B4, inclusive.");
 
             if (interval < 0x0020 || interval > 0x4000)
-                throw new ArgumentOutOfRangeException("interval", "Interval must be between 0x001F and 0x4001.");
+                throw new ArgumentOutOfRangeException("interval", "Interval must be between 0x0020 and 0x4000, inclusive.");
 
-            AciSend(AciOpCode.Bond, (byte)(timeout & 0xFF), (byte)(timeout >> 8 & 0xFF), // Timeout
-                                    (byte)(interval & 0xFF), (byte)(interval >> 8 & 0xFF)); // Interval
+            AciSend(AciOpCode.Bond, (byte)(timeout), (byte)(timeout >> 8), // Timeout
+                                    (byte)(interval), (byte)(interval >> 8)); // Interval
 
             State = Nrf8001State.Bonding;
+        }
+
+        public void OpenRemotePipe(byte pipeId)
+        {
+            if (State != Nrf8001State.Standby)
+                throw new InvalidOperationException("nRF8001 is not in Standby mode.");
+
+            if (pipeId < 1 || pipeId > 62)
+                throw new ArgumentOutOfRangeException("timeout", "Timeout must be between 1 and 62, inclusive.");
+
+            AciSend(AciOpCode.OpenRemotePipe, pipeId);
         }
 
         /// <summary>
@@ -232,14 +244,14 @@ namespace Nrf8001Lib
         /// <param name="data">The data to send.</param>
         public void SendData(byte servicePipeId, params byte[] data)
         {
-            if (servicePipeId < 1 || servicePipeId > 62)
-                throw new ArgumentOutOfRangeException("pipe", "Service pipe ID must be between 0 and 63.");
-
-            if (data.Length < 1 || data.Length > 20)
-                throw new ArgumentOutOfRangeException("data", "Data length must be between 0 and 21.");
-
             if (State != Nrf8001State.Connected)
                 throw new InvalidOperationException("nRF8001 is not connected.");
+
+            if (servicePipeId < 1 || servicePipeId > 62)
+                throw new ArgumentOutOfRangeException("pipe", "Service pipe ID must be between 1 and 62, inclusive.");
+
+            if (data.Length < 1 || data.Length > 20)
+                throw new ArgumentOutOfRangeException("data", "Data length must be between 1 and 20, inclusive.");
 
             if (DataCreditsAvailable < 1)
                 throw new InvalidOperationException("There are no data credits available.");
@@ -313,29 +325,33 @@ namespace Nrf8001Lib
         #region ACI Events
         private void OnRdyInterrupt(uint data1, uint data2, DateTime time)
         {
-            var data = AciReceive();
+            var content = AciReceive();
             AciEvent aciEvent = null;
 
-            switch ((AciEventType)data[0])
+            switch ((AciEventType)content[0])
             {
                 case AciEventType.BondStatus:
-                    aciEvent = new BondStatusEvent(data);
+                    aciEvent = new BondStatusEvent(content);
                     break;
 
                 case AciEventType.CommandResponse:
-                    aciEvent = new CommandResponseEvent(data);
+                    aciEvent = new CommandResponseEvent(content);
                     break;
 
                 case AciEventType.DataCredit:
-                    aciEvent = new DataCreditEvent(data);
+                    aciEvent = new DataCreditEvent(content);
+                    break;
+
+                case AciEventType.DataReceived:
+                    aciEvent = new DataReceivedEvent(content);
                     break;
 
                 case AciEventType.DeviceStarted:
-                    aciEvent = new DeviceStartedEvent(data);
+                    aciEvent = new DeviceStartedEvent(content);
                     break;
 
                 default:
-                    aciEvent = new AciEvent(data);
+                    aciEvent = new AciEvent(content);
                     break;
             }
 
@@ -364,6 +380,10 @@ namespace Nrf8001Lib
 
                 case AciEventType.DataCredit:
                     HandleDataCreditEvent((DataCreditEvent)aciEvent);
+                    break;
+
+                case AciEventType.DataReceived:
+                    HandleDataReceivedEvent((DataReceivedEvent)aciEvent);
                     break;
 
                 case AciEventType.DeviceStarted:
@@ -402,6 +422,12 @@ namespace Nrf8001Lib
             DataCreditsAvailable = aciEvent.DataCreditsAvailable;
         }
 
+        private void HandleDataReceivedEvent(DataReceivedEvent aciEvent)
+        {
+            if (DataReceived != null)
+                DataReceived(aciEvent);
+        }
+
         private void HandleDeviceStartedEvent(DeviceStartedEvent aciEvent)
         {
             State = aciEvent.State;
@@ -415,8 +441,8 @@ namespace Nrf8001Lib
 
         private void HandlePipeStatusEvent(AciEvent aciEvent)
         {
-            OpenPipesBitmap = aciEvent.Data.ToUnsignedLong(1);
-            ClosedPipesBitmap = aciEvent.Data.ToUnsignedLong(9);
+            //OpenPipesBitmap = aciEvent.Data.ToUnsignedLong(1);
+            //ClosedPipesBitmap = aciEvent.Data.ToUnsignedLong(9);
         }
         #endregion
     }

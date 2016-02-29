@@ -4,11 +4,11 @@ namespace Nrf8001Lib.Events
     {
         public byte DataCreditsAvailable
         {
-            get { return Data[1]; }
+            get { return Content[1]; }
         }
 
-        public DataCreditEvent(byte[] data)
-            : base(data)
+        public DataCreditEvent(byte[] content)
+            : base(content)
         {
         }
     }

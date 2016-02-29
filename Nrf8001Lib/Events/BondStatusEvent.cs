@@ -8,11 +8,11 @@ namespace Nrf8001Lib.Events
     {
         public BondStatusCode StatusCode
         {
-            get { return (BondStatusCode)Data[1]; }
+            get { return (BondStatusCode)Content[1]; }
         }
 
-        public BondStatusEvent(byte[] data)
-            : base(data)
+        public BondStatusEvent(byte[] content)
+            : base(content)
         {
         }
     }

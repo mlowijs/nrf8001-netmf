@@ -5,16 +5,16 @@ namespace Nrf8001Lib.Events
     {
         public Nrf8001State State
         {
-            get { return (Nrf8001State)Data[1]; }
+            get { return (Nrf8001State)Content[1]; }
         }
 
         public byte DataCreditsAvailable
         {
-            get { return Data[3]; }
+            get { return Content[3]; }
         }
 
-        public DeviceStartedEvent(byte[] data)
-            : base(data)
+        public DeviceStartedEvent(byte[] content)
+            : base(content)
         {
         }
     }

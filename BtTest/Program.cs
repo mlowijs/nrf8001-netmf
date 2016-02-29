@@ -2,17 +2,19 @@
 using Nrf8001Lib;
 using Nrf8001Lib.Events;
 using SecretLabs.NETMF.Hardware.NetduinoPlus;
+using Microsoft.SPOT;
 
 namespace BtTest
 {
     public class Program
     {
-        const byte TriggerStatePipeId = 1;
-        const byte ReloadStatePipeId = 2;
-        const byte ShotSensorPipeId = 3;
+        const byte RedDotSightPowerPipeId = 1;
+        const byte TriggerStatePipeId = 2;
+        const byte ReloadStatePipeId = 3;
+        const byte ShotSensorPipeId = 4;
 
         const byte Timeout = 15;
-        const byte Interval = 32;
+        const byte Interval = 64;
 
         private readonly byte[][] SetupData = new byte[][]
         {
@@ -34,7 +36,6 @@ namespace BtTest
             new byte[] {0x40,0x1c,0x00,0x12,},
             new byte[] {0x50,0x00,0x2d,0x2c,0xea,0xde,0x18,0xb5,0x1a,0xb2,0xb6,0x44,0xa8,0x36,0x00,0x00,0xfa,0xf0,},
             new byte[] {0xf0,0x00,0x02,0xa3,0x70,},
-
         };
 
         private Nrf8001 _nrf;
@@ -49,6 +50,7 @@ namespace BtTest
 
             _nrf = new Nrf8001(Pins.GPIO_PIN_D8, Pins.GPIO_PIN_D9, Pins.GPIO_PIN_D7, SPI_Devices.SPI1);
             _nrf.AciEventReceived += OnAciEventReceived;
+            _nrf.DataReceived += new DataReceivedEventHandler(OnDataReceived);
 
             _nrf.Setup(SetupData);
         }
@@ -90,15 +92,15 @@ namespace BtTest
         private void OnAciEventReceived(AciEvent aciEvent)
         {
             if (aciEvent.EventType == AciEventType.Disconnected)
-            {
-                _led.Write(false);
+                _nrf.AwaitConnection(Timeout, Interval); // Auto reconnect
+        }
 
-                // Auto reconnect
-                _nrf.AwaitConnection(Timeout, Interval);
-            }
+        private void OnDataReceived(DataReceivedEvent dataReceivedEvent)
+        {
+            if (dataReceivedEvent.ServicePipeId == RedDotSightPowerPipeId)
+                _led.Write(dataReceivedEvent.Data[0] == 1);
 
-            if (aciEvent.EventType == AciEventType.PipeStatus && _nrf.OpenPipesBitmap > 1)
-                _led.Write(true);
+            Debug.Print("Received data with length = " + dataReceivedEvent.Data.Length);
         }
 
 
