@@ -100,11 +100,11 @@
         </Characteristic>
     </Service>
     <Gapsettings>
-        <Name>LaserTag Ctrl 01</Name>
+        <Name>LaserTag Gun 1</Name>
         <DeviceNameWriteLength>0</DeviceNameWriteLength>
-        <LocalPipeOnDeviceName>false</LocalPipeOnDeviceName>
+        <LocalPipeOnDeviceName>true</LocalPipeOnDeviceName>
         <DeviceNameShortLength>1</DeviceNameShortLength>
-        <Apperance>03c0</Apperance>
+        <Apperance>8000</Apperance>
         <SecurityLevel>0</SecurityLevel>
         <AuthenticationReq>0</AuthenticationReq>
         <IoCapabilities>0</IoCapabilities>
