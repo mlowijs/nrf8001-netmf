@@ -64,12 +64,11 @@ namespace Nrf8001Lib
             _rdy = new InterruptPort(rdyPin, false, Port.ResistorMode.PullUp, Port.InterruptMode.InterruptEdgeLow);
             _spi = new SPI(new SPI.Configuration(Cpu.Pin.GPIO_NONE, false, 0, 0, false, true, 100, spiModule));
 
+            State = Nrf8001State.Unknown;
+            Reset();
+
             _rdy.OnInterrupt += OnRdyInterrupt;
             AciEventReceived += OnAciEventReceived;
-
-            State = Nrf8001State.Unknown;
-           
-            Reset();
         }
 
         /// <summary>

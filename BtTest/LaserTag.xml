@@ -2,35 +2,9 @@
 <!DOCTYPE AttributeServer>
 <Profile Version="1.3">
     <SetupId>0</SetupId>
-    <Device>nRF8001_Cx</Device>
+    <Device>nRF8001_Dx</Device>
     <Service Type="local" PrimaryService="true">
-        <Name>LaserTag Control Service</Name>
-        <Uuid BaseUUID="f0fa000036a844b6b21ab518deea2c2d" BaseUUIDName="LaserTag">2000</Uuid>
-        <Characteristic>
-            <Name>Red Dot Sight Power</Name>
-            <Uuid BaseUUID="f0fa000036a844b6b21ab518deea2c2d" BaseUUIDName="LaserTag">2001</Uuid>
-            <DefaultValue>1</DefaultValue>
-            <UsePresentationFormat>0</UsePresentationFormat>
-            <MaxDataLength>1</MaxDataLength>
-            <AttributeLenType>1</AttributeLenType>
-            <ForceOpen>false</ForceOpen>
-            <ForceEncryption>false</ForceEncryption>
-            <Properties>
-                <WriteWithoutResponse>true</WriteWithoutResponse>
-                <Write>false</Write>
-                <Notify>false</Notify>
-                <Indicate>false</Indicate>
-                <Broadcast>false</Broadcast>
-            </Properties>
-            <SetPipe>false</SetPipe>
-            <AckIsAuto>false</AckIsAuto>
-            <PresentationFormatDescriptor Value="0000" Exponent="0" Format="1" NameSpace="01" Unit="0000"/>
-            <PeriodForReadingThisCharacteristic>0</PeriodForReadingThisCharacteristic>
-            <PeriodForProperties/>
-        </Characteristic>
-    </Service>
-    <Service Type="local" PrimaryService="true">
-        <Name>LaserTag Input Service</Name>
+        <Name>LaserTag Gun Input</Name>
         <Uuid BaseUUID="f0fa000036a844b6b21ab518deea2c2d" BaseUUIDName="LaserTag">1000</Uuid>
         <Characteristic>
             <Name>Gun Trigger State</Name>
@@ -54,9 +28,13 @@
             <PeriodForReadingThisCharacteristic>0</PeriodForReadingThisCharacteristic>
             <PeriodForProperties/>
         </Characteristic>
+    </Service>
+    <Service Type="local" PrimaryService="true">
+        <Name>LaserTag Gun Control</Name>
+        <Uuid BaseUUID="f0fa000036a844b6b21ab518deea2c2d" BaseUUIDName="LaserTag">2000</Uuid>
         <Characteristic>
-            <Name>Gun Reload State</Name>
-            <Uuid BaseUUID="f0fa000036a844b6b21ab518deea2c2d" BaseUUIDName="LaserTag">1002</Uuid>
+            <Name>Red Dot Sight Power</Name>
+            <Uuid BaseUUID="f0fa000036a844b6b21ab518deea2c2d" BaseUUIDName="LaserTag">2001</Uuid>
             <DefaultValue>0</DefaultValue>
             <UsePresentationFormat>0</UsePresentationFormat>
             <MaxDataLength>1</MaxDataLength>
@@ -65,42 +43,20 @@
             <ForceEncryption>false</ForceEncryption>
             <Properties>
                 <WriteWithoutResponse>false</WriteWithoutResponse>
-                <Write>false</Write>
-                <Notify>true</Notify>
+                <Write>true</Write>
+                <Notify>false</Notify>
                 <Indicate>false</Indicate>
                 <Broadcast>false</Broadcast>
             </Properties>
             <SetPipe>false</SetPipe>
-            <AckIsAuto>false</AckIsAuto>
-            <PresentationFormatDescriptor Value="0000" Exponent="0" Format="1" NameSpace="01" Unit="0000"/>
-            <PeriodForReadingThisCharacteristic>0</PeriodForReadingThisCharacteristic>
-            <PeriodForProperties/>
-        </Characteristic>
-        <Characteristic>
-            <Name>Sensor Shot Hit</Name>
-            <Uuid BaseUUID="f0fa000036a844b6b21ab518deea2c2d" BaseUUIDName="LaserTag">1010</Uuid>
-            <DefaultValue>0</DefaultValue>
-            <UsePresentationFormat>0</UsePresentationFormat>
-            <MaxDataLength>1</MaxDataLength>
-            <AttributeLenType>1</AttributeLenType>
-            <ForceOpen>false</ForceOpen>
-            <ForceEncryption>false</ForceEncryption>
-            <Properties>
-                <WriteWithoutResponse>false</WriteWithoutResponse>
-                <Write>false</Write>
-                <Notify>true</Notify>
-                <Indicate>false</Indicate>
-                <Broadcast>false</Broadcast>
-            </Properties>
-            <SetPipe>false</SetPipe>
-            <AckIsAuto>false</AckIsAuto>
+            <AckIsAuto>true</AckIsAuto>
             <PresentationFormatDescriptor Value="0000" Exponent="0" Format="1" NameSpace="01" Unit="0000"/>
             <PeriodForReadingThisCharacteristic>0</PeriodForReadingThisCharacteristic>
             <PeriodForProperties/>
         </Characteristic>
     </Service>
     <Gapsettings>
-        <Name>LaserTag Ctrl 01</Name>
+        <Name>LaserTag Gun 01</Name>
         <DeviceNameWriteLength>0</DeviceNameWriteLength>
         <LocalPipeOnDeviceName>false</LocalPipeOnDeviceName>
         <DeviceNameShortLength>1</DeviceNameShortLength>
@@ -113,7 +69,7 @@
         <MinimumKeySize>7</MinimumKeySize>
         <MaximumKeySize>16</MaximumKeySize>
         <AdvertisingDataBondedBitmap>1a</AdvertisingDataBondedBitmap>
-        <AdvertisingDataGeneralBitmap>1a</AdvertisingDataGeneralBitmap>
+        <AdvertisingDataGeneralBitmap>0</AdvertisingDataGeneralBitmap>
         <AdvertisingDataBrodcastBitmap>0</AdvertisingDataBrodcastBitmap>
         <AdvertisingDataBondedScanResponseBitmap>0</AdvertisingDataBondedScanResponseBitmap>
         <AdvertisingDataGeneralScanResponseBitmap>0</AdvertisingDataGeneralScanResponseBitmap>
@@ -125,8 +81,8 @@
         <AdvertisingDataGeneralScanResponseBitmapCustom>0</AdvertisingDataGeneralScanResponseBitmapCustom>
         <AdvertisingDataBrodcastScanResponseBitmapCustom>0</AdvertisingDataBrodcastScanResponseBitmapCustom>
         <TxPowerLevelOffset>0</TxPowerLevelOffset>
-        <MinimumConnectionInterval>65535</MinimumConnectionInterval>
-        <MaximumConnectionInterval>65535</MaximumConnectionInterval>
+        <MinimumConnectionInterval>6</MinimumConnectionInterval>
+        <MaximumConnectionInterval>6</MaximumConnectionInterval>
         <SlaveLatency>0</SlaveLatency>
         <TimeoutMultipler>65535</TimeoutMultipler>
         <AddServiceUpdateCharacteristic>false</AddServiceUpdateCharacteristic>
