@@ -13,6 +13,7 @@ namespace Nrf8001Lib.Events
         TimingEvent = 0x89,
         DataCredit = 0x8A,
         DataReceived = 0x8C,
-        PipeError = 0x8D
+        PipeError = 0x8D,
+        DisplayKey = 0x8E
     }
 }

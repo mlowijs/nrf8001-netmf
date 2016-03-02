@@ -61,15 +61,15 @@
         <LocalPipeOnDeviceName>false</LocalPipeOnDeviceName>
         <DeviceNameShortLength>1</DeviceNameShortLength>
         <Apperance>03c0</Apperance>
-        <SecurityLevel>0</SecurityLevel>
+        <SecurityLevel>1</SecurityLevel>
         <AuthenticationReq>0</AuthenticationReq>
         <IoCapabilities>0</IoCapabilities>
         <BondTimeout>600</BondTimeout>
-        <SecurityRequestDelay>10</SecurityRequestDelay>
+        <SecurityRequestDelay>0</SecurityRequestDelay>
         <MinimumKeySize>7</MinimumKeySize>
         <MaximumKeySize>16</MaximumKeySize>
-        <AdvertisingDataBondedBitmap>1a</AdvertisingDataBondedBitmap>
-        <AdvertisingDataGeneralBitmap>0</AdvertisingDataGeneralBitmap>
+        <AdvertisingDataBondedBitmap>10</AdvertisingDataBondedBitmap>
+        <AdvertisingDataGeneralBitmap>10</AdvertisingDataGeneralBitmap>
         <AdvertisingDataBrodcastBitmap>0</AdvertisingDataBrodcastBitmap>
         <AdvertisingDataBondedScanResponseBitmap>0</AdvertisingDataBondedScanResponseBitmap>
         <AdvertisingDataGeneralScanResponseBitmap>0</AdvertisingDataGeneralScanResponseBitmap>

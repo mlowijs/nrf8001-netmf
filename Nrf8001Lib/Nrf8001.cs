@@ -393,6 +393,10 @@ namespace Nrf8001Lib
                     HandleDisconnectedEvent(aciEvent);
                     break;
 
+                case AciEventType.PipeError:
+                    HandlePipeErrorEvent(aciEvent);
+                    break;
+
                 case AciEventType.PipeStatus:
                     HandlePipeStatusEvent(aciEvent);
                     break;                
@@ -401,6 +405,8 @@ namespace Nrf8001Lib
 
         private void HandleCommandResponseEvent(CommandResponseEvent aciEvent)
         {
+            //Debug.Print("CommandResponse command = " + aciEvent.Command + " statusCode = " + aciEvent.StatusCode);
+
             if (aciEvent.Command == AciOpCode.Setup)
             {
                 if (aciEvent.StatusCode == AciStatusCode.TransactionContinue)
@@ -412,6 +418,8 @@ namespace Nrf8001Lib
 
         private void HandleBondStatusEvent(BondStatusEvent aciEvent)
         {
+            Debug.Print("BondStatus statusCode = " + aciEvent.StatusCode);
+
             if (aciEvent.StatusCode == BondStatusCode.Success)
                 Bonded = true;
         }
@@ -438,10 +446,17 @@ namespace Nrf8001Lib
             State = Nrf8001State.Standby;
         }
 
+        private void HandlePipeErrorEvent(AciEvent aciEvent)
+        {
+            //Debug.Print("PipeError servicePipe = " + aciEvent.Content[1] + " errorCode = " + aciEvent.Content[2]);
+        }
+
         private void HandlePipeStatusEvent(AciEvent aciEvent)
         {
-            //OpenPipesBitmap = aciEvent.Data.ToUnsignedLong(1);
-            //ClosedPipesBitmap = aciEvent.Data.ToUnsignedLong(9);
+            OpenPipesBitmap = aciEvent.Content.ToUnsignedLong(1);
+            ClosedPipesBitmap = aciEvent.Content.ToUnsignedLong(9);
+
+            //Debug.Print("PipeStatus open = " + OpenPipesBitmap + " closed = " + ClosedPipesBitmap);
         }
         #endregion
     }
