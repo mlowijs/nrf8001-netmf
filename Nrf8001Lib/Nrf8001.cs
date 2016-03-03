@@ -68,7 +68,6 @@ namespace Nrf8001Lib
             Reset();
 
             _rdy.OnInterrupt += OnRdyInterrupt;
-            AciEventReceived += OnAciEventReceived;
         }
 
         /// <summary>
@@ -95,7 +94,7 @@ namespace Nrf8001Lib
             if (_eventQueue.Count == 0)
                 return;
 
-            AciEventReceived((AciEvent)_eventQueue.Dequeue());
+            ProcessEvent((byte[])_eventQueue.Dequeue());
         }
 
         /// <summary>
@@ -243,17 +242,20 @@ namespace Nrf8001Lib
         /// <param name="data">The data to send.</param>
         public void SendData(byte servicePipeId, params byte[] data)
         {
-            if (State != Nrf8001State.Connected)
-                throw new InvalidOperationException("nRF8001 is not connected.");
-
             if (servicePipeId < 1 || servicePipeId > 62)
                 throw new ArgumentOutOfRangeException("pipe", "Service pipe ID must be between 1 and 62, inclusive.");
 
             if (data.Length < 1 || data.Length > 20)
                 throw new ArgumentOutOfRangeException("data", "Data length must be between 1 and 20, inclusive.");
 
+            if (State != Nrf8001State.Connected)
+                throw new InvalidOperationException("nRF8001 is not connected.");
+
             if (DataCreditsAvailable < 1)
                 throw new InvalidOperationException("There are no data credits available.");
+
+            if ((OpenPipesBitmap >> servicePipeId & 0x01) == 0)
+                throw new InvalidOperationException("Service pipe is not open.");
 
             AciSend(AciOpCode.SendData, servicePipeId, data);
         }
@@ -324,52 +326,23 @@ namespace Nrf8001Lib
         #region ACI Events
         private void OnRdyInterrupt(uint data1, uint data2, DateTime time)
         {
-            var content = AciReceive();
+            _eventQueue.Enqueue(AciReceive());
+        }
+
+        private void ProcessEvent(byte[] content)
+        {
+            var eventType = (AciEventType)content[0];            
             AciEvent aciEvent = null;
 
-            switch ((AciEventType)content[0])
+            switch (eventType)
             {
                 case AciEventType.BondStatus:
                     aciEvent = new BondStatusEvent(content);
-                    break;
-
-                case AciEventType.CommandResponse:
-                    aciEvent = new CommandResponseEvent(content);
-                    break;
-
-                case AciEventType.DataCredit:
-                    aciEvent = new DataCreditEvent(content);
-                    break;
-
-                case AciEventType.DataReceived:
-                    aciEvent = new DataReceivedEvent(content);
-                    break;
-
-                case AciEventType.DeviceStarted:
-                    aciEvent = new DeviceStartedEvent(content);
-                    break;
-
-                default:
-                    aciEvent = new AciEvent(content);
-                    break;
-            }
-
-            _eventQueue.Enqueue(aciEvent);
-        }
-
-        private void OnAciEventReceived(AciEvent aciEvent)
-        {
-#if DEBUG
-            Debug.Print("Event: " + aciEvent.EventType.GetName());
-#endif
-
-            switch (aciEvent.EventType)
-            {
-                case AciEventType.BondStatus:
                     HandleBondStatusEvent((BondStatusEvent)aciEvent);
                     break;
 
                 case AciEventType.CommandResponse:
+                    aciEvent = new CommandResponseEvent(content);
                     HandleCommandResponseEvent((CommandResponseEvent)aciEvent);
                     break;
 
@@ -378,35 +351,42 @@ namespace Nrf8001Lib
                     break;
 
                 case AciEventType.DataCredit:
+                    aciEvent = new DataCreditEvent(content);
                     HandleDataCreditEvent((DataCreditEvent)aciEvent);
                     break;
 
                 case AciEventType.DataReceived:
+                    aciEvent = new DataReceivedEvent(content);
                     HandleDataReceivedEvent((DataReceivedEvent)aciEvent);
                     break;
 
                 case AciEventType.DeviceStarted:
+                    aciEvent = new DeviceStartedEvent(content);
                     HandleDeviceStartedEvent((DeviceStartedEvent)aciEvent);
                     break;
 
                 case AciEventType.Disconnected:
-                    HandleDisconnectedEvent(aciEvent);
-                    break;
-
-                case AciEventType.PipeError:
-                    HandlePipeErrorEvent(aciEvent);
+                    State = Nrf8001State.Standby;
                     break;
 
                 case AciEventType.PipeStatus:
-                    HandlePipeStatusEvent(aciEvent);
+                    OpenPipesBitmap = aciEvent.Content.ToUnsignedLong(1);
+                    ClosedPipesBitmap = aciEvent.Content.ToUnsignedLong(9);
                     break;                
+
+                default:
+                    aciEvent = new AciEvent(content);
+                    break;
             }
+
+            Debug.Print("Event: " + eventType.GetName());
+
+            if (AciEventReceived != null)
+                AciEventReceived(aciEvent);
         }
 
         private void HandleCommandResponseEvent(CommandResponseEvent aciEvent)
         {
-            //Debug.Print("CommandResponse command = " + aciEvent.Command + " statusCode = " + aciEvent.StatusCode);
-
             if (aciEvent.Command == AciOpCode.Setup)
             {
                 if (aciEvent.StatusCode == AciStatusCode.TransactionContinue)
@@ -418,8 +398,6 @@ namespace Nrf8001Lib
 
         private void HandleBondStatusEvent(BondStatusEvent aciEvent)
         {
-            Debug.Print("BondStatus statusCode = " + aciEvent.StatusCode);
-
             if (aciEvent.StatusCode == BondStatusCode.Success)
                 Bonded = true;
         }
@@ -439,24 +417,6 @@ namespace Nrf8001Lib
         {
             State = aciEvent.State;
             DataCreditsAvailable = aciEvent.DataCreditsAvailable;
-        }
-
-        private void HandleDisconnectedEvent(AciEvent aciEvent)
-        {
-            State = Nrf8001State.Standby;
-        }
-
-        private void HandlePipeErrorEvent(AciEvent aciEvent)
-        {
-            //Debug.Print("PipeError servicePipe = " + aciEvent.Content[1] + " errorCode = " + aciEvent.Content[2]);
-        }
-
-        private void HandlePipeStatusEvent(AciEvent aciEvent)
-        {
-            OpenPipesBitmap = aciEvent.Content.ToUnsignedLong(1);
-            ClosedPipesBitmap = aciEvent.Content.ToUnsignedLong(9);
-
-            //Debug.Print("PipeStatus open = " + OpenPipesBitmap + " closed = " + ClosedPipesBitmap);
         }
         #endregion
     }
