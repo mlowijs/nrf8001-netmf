@@ -87,7 +87,7 @@
         <TimeoutMultipler>65535</TimeoutMultipler>
         <AddServiceUpdateCharacteristic>false</AddServiceUpdateCharacteristic>
         <AddServiceUpdateCharacteristicPipe>false</AddServiceUpdateCharacteristicPipe>
-        <TimingChangeDelay>5</TimingChangeDelay>
+        <TimingChangeDelay>4</TimingChangeDelay>
         <CustomAdTypes/>
     </Gapsettings>
     <Hardwaresettings>

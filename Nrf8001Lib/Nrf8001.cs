@@ -75,6 +75,7 @@ namespace Nrf8001Lib
         /// </summary>
         public void Reset()
         {
+            Bonded = false;
             State = Nrf8001State.Resetting;
 
             _rst.Write(false);
@@ -347,6 +348,7 @@ namespace Nrf8001Lib
                     break;
 
                 case AciEventType.Connected:
+                    aciEvent = new AciEvent(content);
                     State = Nrf8001State.Connected;
                     break;
 
@@ -366,10 +368,12 @@ namespace Nrf8001Lib
                     break;
 
                 case AciEventType.Disconnected:
+                    aciEvent = new AciEvent(content);
                     State = Nrf8001State.Standby;
                     break;
 
                 case AciEventType.PipeStatus:
+                    aciEvent = new AciEvent(content);
                     OpenPipesBitmap = aciEvent.Content.ToUnsignedLong(1);
                     ClosedPipesBitmap = aciEvent.Content.ToUnsignedLong(9);
                     break;                
