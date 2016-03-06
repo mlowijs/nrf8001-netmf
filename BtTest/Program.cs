@@ -41,12 +41,11 @@ namespace BtTest
         private Nrf8001 _nrf;
         private OutputPort _led = new OutputPort(Pins.ONBOARD_LED, false);
 
-        private InputPort _trigger, _reload;
+        private InputPort _trigger;
 
         public Program()
         {
             _trigger = new InputPort(Pins.GPIO_PIN_D4, true, ResistorModes.PullUp);
-            _reload = new InputPort(Pins.GPIO_PIN_D5, true, ResistorModes.PullUp);
 
             _nrf = new Nrf8001(Pins.GPIO_PIN_D8, Pins.GPIO_PIN_D9, Pins.GPIO_PIN_D7, SPI_Devices.SPI1);
             _nrf.AciEventReceived += OnAciEventReceived;
@@ -59,7 +58,6 @@ namespace BtTest
         public void Loop()
         {
             bool triggerState = _trigger.Read();
-            bool reloadState = _reload.Read();
 
             _nrf.AwaitBond(Timeout, Interval);
 
